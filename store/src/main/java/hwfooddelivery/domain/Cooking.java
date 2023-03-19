@@ -82,7 +82,7 @@ public class Cooking {
 
     public static void cancel(CancelRequested cancelRequested) {
         repository().findByOrderId(cancelRequested.getId()).ifPresent(cooking->{
-            if (cooking.getStatus().equals("READY")) {
+            if (cooking.getStatus().equals("READY") || cooking.getStatus().equals("ACCEPTED")) {
                 cooking.setStatus("CANCELED");
                 repository().save(cooking);
 
