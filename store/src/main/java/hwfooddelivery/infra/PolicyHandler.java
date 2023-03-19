@@ -36,14 +36,14 @@ public class PolicyHandler {
 
     @StreamListener(
         value = KafkaProcessor.INPUT,
-        condition = "headers['type']=='OrderCanceled'"
+        condition = "headers['type']=='CancelRequested'"
     )
-    public void wheneverOrderCanceled_Cancel(
-        @Payload OrderCanceled orderCanceled
+    public void wheneverCancelRequested_Cancel(
+        @Payload CancelRequested cancelRequested
     ) {
-        OrderCanceled event = orderCanceled;
+        CancelRequested event = cancelRequested;
         System.out.println(
-            "\n\n##### listener Cancel : " + orderCanceled + "\n\n"
+            "\n\n##### listener Cancel : " + cancelRequested + "\n\n"
         );
 
         // Sample Logic //

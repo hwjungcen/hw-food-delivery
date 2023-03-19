@@ -33,17 +33,6 @@ public class Cooking {
 
     @PostPersist
     public void onPostPersist() {
-        CookingAccepted cookingAccepted = new CookingAccepted(this);
-        cookingAccepted.publishAfterCommit();
-
-        CookingRejected cookingRejected = new CookingRejected(this);
-        cookingRejected.publishAfterCommit();
-
-        CookingStarted cookingStarted = new CookingStarted(this);
-        cookingStarted.publishAfterCommit();
-
-        CookingFinished cookingFinished = new CookingFinished(this);
-        cookingFinished.publishAfterCommit();
     }
 
     @PreUpdate
@@ -56,51 +45,50 @@ public class Cooking {
         return cookingRepository;
     }
 
-    public void accept() {}
-
-    public void start() {}
-
-    public void finish() {}
-
-    public void reject() {}
-
-    public static void add(OrderPaid orderPaid) {
-        /** Example 1:  new item 
-        Cooking cooking = new Cooking();
-        repository().save(cooking);
-
-        */
-
-        /** Example 2:  finding and process
-        
-        repository().findById(orderPaid.get???()).ifPresent(cooking->{
-            
-            cooking // do something
-            repository().save(cooking);
-
-
-         });
-        */
-
+    public void accept() {
+        setStatus("ACCEPTED");
+        CookingAccepted cookingAccepted = new CookingAccepted(this);
+        cookingAccepted.publishAfterCommit();
     }
 
-    public static void cancel(OrderCanceled orderCanceled) {
-        /** Example 1:  new item 
+    public void start() {
+        setStatus("STARTED");
+        CookingStarted cookingStarted = new CookingStarted(this);
+        cookingStarted.publishAfterCommit();
+    }
+
+    public void finish() {
+        setStatus("FINISHED");
+        CookingFinished cookingFinished = new CookingFinished(this);
+        cookingFinished.publishAfterCommit();
+    }
+
+    public void reject() {
+        setStatus("REJECETED");
+        CookingRejected cookingRejected = new CookingRejected(this);
+        cookingRejected.publishAfterCommit();
+    }
+
+    public static void add(OrderPaid orderPaid) {
         Cooking cooking = new Cooking();
+        cooking.setOrderId(orderPaid.getId());
+        cooking.setStoreId(orderPaid.getStoreId());
+        cooking.setFoodId(orderPaid.getFoodId());
+        cooking.setCustomerId(orderPaid.getCustomerId());
+        cooking.setAddress(orderPaid.getAddress());
+        cooking.setStatus("READY");
         repository().save(cooking);
+    }
 
-        */
+    public static void cancel(CancelRequested cancelRequested) {
+        repository().findByOrderId(cancelRequested.getId()).ifPresent(cooking->{
+            if (cooking.getStatus().equals("READY")) {
+                cooking.setStatus("CANCELED");
+                repository().save(cooking);
 
-        /** Example 2:  finding and process
-        
-        repository().findById(orderCanceled.get???()).ifPresent(cooking->{
-            
-            cooking // do something
-            repository().save(cooking);
-
-
+                OrderCanceled orderCanceled = new OrderCanceled(cooking);
+                orderCanceled.publishAfterCommit();
+            }
          });
-        */
-
     }
 }

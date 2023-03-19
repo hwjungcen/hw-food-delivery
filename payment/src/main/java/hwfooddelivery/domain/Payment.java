@@ -22,12 +22,11 @@ public class Payment {
 
     @PostPersist
     public void onPostPersist() {
-        PaymentPaid paymentPaid = new PaymentPaid(this);
-        paymentPaid.publishAfterCommit();
     }
 
     @PreUpdate
-    public void onPreUpdate() {}
+    public void onPreUpdate() {
+    }
 
     public static PaymentRepository repository() {
         PaymentRepository paymentRepository = PaymentApplication.applicationContext.getBean(
@@ -37,22 +36,15 @@ public class Payment {
     }
 
     public static void ordered(OrderPlaced orderPlaced) {
-        /** Example 1:  new item 
         Payment payment = new Payment();
+        payment.setOrderId(orderPlaced.getId());
+        payment.setStatus("WAIT");
         repository().save(payment);
+    }
 
-        */
-
-        /** Example 2:  finding and process
-        
-        repository().findById(orderPlaced.get???()).ifPresent(payment->{
-            
-            payment // do something
-            repository().save(payment);
-
-
-         });
-        */
-
+    public void pay() {
+        setStatus("PAID");
+        PaymentPaid paymentPaid = new PaymentPaid(this);
+        paymentPaid.publishAfterCommit();
     }
 }

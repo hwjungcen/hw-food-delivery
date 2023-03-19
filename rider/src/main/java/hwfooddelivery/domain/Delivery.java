@@ -25,11 +25,6 @@ public class Delivery {
 
     @PostPersist
     public void onPostPersist() {
-        DeliveryStarted deliveryStarted = new DeliveryStarted(this);
-        deliveryStarted.publishAfterCommit();
-
-        DeliveryFinished deliveryFinished = new DeliveryFinished(this);
-        deliveryFinished.publishAfterCommit();
     }
 
     @PreUpdate
@@ -42,27 +37,23 @@ public class Delivery {
         return deliveryRepository;
     }
 
-    public void pick() {}
+    public void pick() {
+        setStatus("STARTED");
+        DeliveryStarted deliveryStarted = new DeliveryStarted(this);
+        deliveryStarted.publishAfterCommit();
+    }
 
-    public void confirm() {}
+    public void confirm() {
+        setStatus("FINISHED");
+        DeliveryFinished deliveryFinished = new DeliveryFinished(this);
+        deliveryFinished.publishAfterCommit();
+    }
 
     public static void addDelivery(CookingFinished cookingFinished) {
-        /** Example 1:  new item 
         Delivery delivery = new Delivery();
+        delivery.setOrderId(cookingFinished.getOrderId());
+        delivery.setAddress(cookingFinished.getAddress());
+        delivery.setStatus("ADDED");
         repository().save(delivery);
-
-        */
-
-        /** Example 2:  finding and process
-        
-        repository().findById(cookingFinished.get???()).ifPresent(delivery->{
-            
-            delivery // do something
-            repository().save(delivery);
-
-
-         });
-        */
-
     }
 }

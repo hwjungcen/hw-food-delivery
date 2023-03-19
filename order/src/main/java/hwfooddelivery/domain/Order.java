@@ -1,7 +1,7 @@
 package hwfooddelivery.domain;
 
 import hwfooddelivery.OrderApplication;
-import hwfooddelivery.domain.OrderCanceled;
+import hwfooddelivery.domain.CancelRequested;
 import hwfooddelivery.domain.OrderPaid;
 import hwfooddelivery.domain.OrderPlaced;
 import java.util.Date;
@@ -30,14 +30,9 @@ public class Order {
 
     @PostPersist
     public void onPostPersist() {
+        setStatus("ORDERED");
         OrderPlaced orderPlaced = new OrderPlaced(this);
         orderPlaced.publishAfterCommit();
-
-        OrderCanceled orderCanceled = new OrderCanceled(this);
-        orderCanceled.publishAfterCommit();
-
-        OrderPaid orderPaid = new OrderPaid(this);
-        orderPaid.publishAfterCommit();
     }
 
     @PreRemove
@@ -50,25 +45,18 @@ public class Order {
         return orderRepository;
     }
 
-    public void cancel() {}
+    public void cancel() {
+        CancelRequested cancelRequested = new CancelRequested(this);
+        cancelRequested.publishAfterCommit();
+    }
 
     public static void paid(PaymentPaid paymentPaid) {
-        /** Example 1:  new item 
-        Order order = new Order();
-        repository().save(order);
-
-        */
-
-        /** Example 2:  finding and process
-        
-        repository().findById(paymentPaid.get???()).ifPresent(order->{
-            
-            order // do something
+        repository().findById(paymentPaid.getOrderId()).ifPresent(order->{
+            order.setStatus("PAID");
             repository().save(order);
 
-
+            OrderPaid orderPaid = new OrderPaid(order);
+            orderPaid.publishAfterCommit();
          });
-        */
-
     }
 }
